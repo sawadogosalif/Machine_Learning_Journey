@@ -1,7 +1,7 @@
 # A journey in Machine_Learning
 
 
-Le but de ce projet est réaliser une segment d'une base de données sur la performances des étudiants.
+Le but de ce projet est réaliser une segmentation d'une base de données sur la performances des étudiants.
 Une importance sera donnée à l'interpretation des clusters.
 Nous tenterons en un prémier temps de trouver une segmentation optimale.
 Dans un second temp, nous décrirons les  statistiques des clusters.
