@@ -1,0 +1,208 @@
+---
+title: " Trees algorithms"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+---
+
+# Libraries
+```{r}
+require(caret)  #for easy machine learning workflow
+require(MASS)   #for Modern Applied Statistic
+require(dplyr)    # alternatively, this also loads %>%
+library(rpart) # (Reursive PARTitioning) 
+library(rpart.plot)
+library(visNetwork) #customize tree
+library(ggparty)    # plot ctree
+library(readxl)
+library(party)
+library(C50)        #c50 tree
+
+```
+# Functions
+```{r}
+path="C:/Users/u32118508/OneDrive - UPEC/Bureau/Machine_learning_journey/A_journey_in_Machine_Learning/"
+source(paste0(path,"00_functions_tree.R"))
+source(paste0(path,"00_functions_multiclass.R"))
+
+```
+
+# Data
+
+```{r}
+# Load data
+data=read_excel(paste0(path,"OUTPUT/output_tp1.xlsx"))
+
+# declare factor features
+factor_features<-c("romantic", "internet", "sex","activities","paid","schoolsup","cluster")
+data[,factor_features]=data %>%
+  dplyr::select(factor_features) %>%
+  mutate(across(everything(), as.factor))
+
+head(data)
+```
+
+Partitionnement de données 
+```{r}
+set.seed(123)
+train.size=0.8
+train.index<- sample.int(dim(data)[1],round(dim(data)[1] * train.size ))
+train.sample=data[train.index, ]
+test.sample=data[-train.index, ]
+```
+
+# **CART**
+## Deep tree
+```{r}
+cart1 = rpart(cluster~ . ,
+              data = train.sample,
+              method="class",
+              parms=list(split="gini"),
+              cp=0)
+              # By default :rpart.control(minsplit = 20, minbucket = round(minsplit/3),
+prp(cart1,type=2,extra=1,split.box.col="lightblue")
+```
+## Prunning
+```{r}
+Cv.cart <- train(cluster~.,data=data,method="rpart",
+                 metric="Accuracy",
+                 trControl=trainControl(method="repeatedcv",
+                                        repeats=50,
+                                        number=10),
+                 tuneGrid=data.frame(cp=seq(0,0.05,length=50)))
+
+plot(Cv.cart)
+```
+## Best fit
+
+```{r}
+model.cart <- prune(cart1,cp=as.numeric(Cv.cart$best))
+prp(model.cart,type=2,extra=1,split.box.col="lightblue")
+```
+
+## Model assessment
+
+```{r}
+pred.cart_train <- predict(model.cart,train.sample,type="class")
+pred.cart_test  <- predict(model.cart,test.sample,type="class")
+```
+Les performances sur le Train Set
+```{r}
+accuracy_rate(pred.cart_train,  train.sample$cluster)
+F1_rate(pred.cart_train,  train.sample$cluster)
+```
+Les performances sur le Test Set
+```{r}
+accuracy_rate(pred.cart_test,  test.sample$cluster)
+F1_rate(pred.cart_test,  test.sample$cluster)
+```
+En comparant les performances du test set et celui du train set, il semble avoir peu overfitting.Globalement, les resultats sont très bien.
+
+# **CTREE**
+
+## Fit
+
+```{r}
+model.ctree= ctree(cluster ~., 
+                             data = train.sample, 
+                             control=ctree_control(mincriterion =0.95, minbucket=10,testtype = "Bonferroni"))
+```
+
+How to evaluate the model?
+```{r}
+pred.ctree_train <- predict(model.ctree,train.sample)
+pred.ctree_test  <- predict(model.ctree,test.sample)
+```
+
+
+
+Train Set
+```{r}
+accuracy_rate(pred.ctree_train,  train.sample$cluster)
+F1_rate(pred.ctree_train,   train.sample$cluster)
+```
+
+
+Test Set
+```{r}
+accuracy_rate(pred.ctree_test,   test.sample$cluster)
+F1_rate(pred.ctree_test,   test.sample$cluster)
+```
+
+Ce modèle est bon performant par rapport au CART!!!
+
+```{r}
+# plot_ctree(model.ctree)
+```
+![Caption for the picture.](C:/Users/u32118508/OneDrive - UPEC/Bureau/Machine_learning_journey/A_journey_in_Machine_Learning/03_trees_files/plot.png)
+
+# C50
+
+Elagage :a l'effectif du noeud
+
+C5.0 cherche `a minimiser l'entropie dans les noeuds-fils
+
+C5.0 n'est pas binaire. 
+
+```{r}
+set.seed(1)
+c50_grd<-expand.grid(
+  .winnow = c(TRUE, FALSE),
+  .trials=1:15,
+  .model="tree"
+)
+c50_cv <- train(cluster ~ .,
+                data = train.sample,
+                method = "C5.0",
+                na.action = na.pass,
+                trControl = trainControl(method = "cv", number = 10),
+                tuneGrid = c50_grd,
+                verbose=FALSE)
+plot(c50_cv)
+c50_cv$bestTune
+```
+We should use Winnowing and fix trials to 8.
+
+```{r}
+model.c50<- C5.0(cluster ~ .,
+                 data = train.sample,
+                 trials=4,
+                 control= C5.0Control(winnow = FALSE))
+```
+
+```{r}
+c50_cv$modelInfo
+
+```
+
+```{r}
+summary(model.c50,trials=4)
+```
+# Evaluation du modèle
+
+```{r}
+pred.c50_train <- predict(model.c50,train.sample)
+pred.c50_test  <- predict(model.c50,test.sample)
+```
+
+Train Set
+```{r}
+accuracy_rate(pred.c50_train,  train.sample$cluster)
+F1_rate(pred.c50_train,   train.sample$cluster)
+```
+Waouh!!!!!! Je viens d'avoir les performances les plus élévées. 
+
+Cela n'est pas aussi étonnant vu que le nombre de trials=4.
+
+Mais avant de se prononcer, les performances sur les données de test doivent etre inspectées.
+
+ Test Set
+```{r}
+accuracy_rate(pred.c50_test,   test.sample$cluster)
+F1_rate(pred.c50_test,   test.sample$cluster)
+```
+Par rapport aux autres modèles, les métriques du C50 sont plus élévées.
+
+En définitive C50 est la meilleure option.
+
