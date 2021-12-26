@@ -16,88 +16,14 @@ Trees algorithms
 
 ``` r
 require(caret)  #for easy machine learning workflow
-```
-
-    ## Le chargement a nécessité le package : caret
-
-    ## Le chargement a nécessité le package : ggplot2
-
-    ## Le chargement a nécessité le package : lattice
-
-``` r
 require(MASS)   #for Modern Applied Statistic
-```
-
-    ## Le chargement a nécessité le package : MASS
-
-``` r
-require(dplyr)    # alternatively, this also loads %>%
-```
-
-    ## Le chargement a nécessité le package : dplyr
-
-    ## 
-    ## Attachement du package : 'dplyr'
-
-    ## L'objet suivant est masqué depuis 'package:MASS':
-    ## 
-    ##     select
-
-    ## Les objets suivants sont masqués depuis 'package:stats':
-    ## 
-    ##     filter, lag
-
-    ## Les objets suivants sont masqués depuis 'package:base':
-    ## 
-    ##     intersect, setdiff, setequal, union
-
-``` r
+require(dplyr)    # alternatively, this also loads 
 library(rpart) # (Reursive PARTitioning) 
 library(rpart.plot)
 library(visNetwork) #customize tree
 library(ggparty)    # plot ctree
-```
-
-    ## Le chargement a nécessité le package : partykit
-
-    ## Le chargement a nécessité le package : grid
-
-    ## Le chargement a nécessité le package : libcoin
-
-    ## Le chargement a nécessité le package : mvtnorm
-
-``` r
 library(readxl)
 library(party)
-```
-
-    ## Le chargement a nécessité le package : modeltools
-
-    ## Le chargement a nécessité le package : stats4
-
-    ## Le chargement a nécessité le package : strucchange
-
-    ## Le chargement a nécessité le package : zoo
-
-    ## 
-    ## Attachement du package : 'zoo'
-
-    ## Les objets suivants sont masqués depuis 'package:base':
-    ## 
-    ##     as.Date, as.Date.numeric
-
-    ## Le chargement a nécessité le package : sandwich
-
-    ## 
-    ## Attachement du package : 'party'
-
-    ## Les objets suivants sont masqués depuis 'package:partykit':
-    ## 
-    ##     cforest, ctree, ctree_control, edge_simple, mob, mob_control,
-    ##     node_barplot, node_bivplot, node_boxplot, node_inner, node_surv,
-    ##     node_terminal, varimp
-
-``` r
 library(C50)        #c50 tree
 ```
 
@@ -287,9 +213,7 @@ Ce modèle est bon performant par rapport au CART!!!
 # plot_ctree(model.ctree)
 ```
 
-![Caption for the
-picture.](C:/Users/u32118508/OneDrive%20-%20UPEC/Bureau/Machine_learning_journey/A_journey_in_Machine_Learning/03_trees_files/plot.png)
-
+![](03_trees_files/plot.png)<!-- -->
 # C50
 
 Elagage :a l’effectif du noeud
