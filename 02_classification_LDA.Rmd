@@ -1,0 +1,297 @@
+---
+title: "Linear Discriminant Analysis "
+output:
+  rmarkdown::github_document:
+    toc: yes
+---
+
+The purpose of this notebook is to measure the quality of the work carried out in the clustering part.
+The more stable our clustering is, the more we will be able to find good ranking. 
+Moreover, an LDA will also allow focusing on the variables to be explained.
+   
+   
+# My functions
+```{r}
+source("C:/Users/u32118508/OneDrive - UPEC/Bureau/Machine_learning_journey/A_journey_in_Machine_Learning/00_functions_multiclass.R")
+```
+# Libraries
+```{r}
+library(tidyverse) #for easy data manipulation and visualization
+library(caret)  #for easy machine learning workflow
+library(MASS)   #for Modern Applied Statistic
+library(readxl) # Load the data
+library(klaR)   # lda features selection
+
+```
+
+# Data
+```{r}
+data=read_excel("C:/Users/u32118508/OneDrive - UPEC/Bureau/Machine_learning_journey/A_journey_in_Machine_Learning/OUTPUT/output_tp1.xlsx")
+head(data)
+```
+
+
+LDA is compatible with categorial feeature. This is why we transform features in binaries features.
+We don't use hot Encoding in order to avoid multicolinearity.
+
+# MODELS
+
+Split the data into training (80%) and test set (20%)
+```{r}
+set.seed(123)
+train.size=0.8
+train.index<- sample.int(dim(data)[1],round(dim(data)[1] * train.size ))
+train.sample=data[train.index, ]
+test.sample=data[-train.index, ]
+```
+
+
+## First model 
+
+Fit the model
+```{r}
+model <- lda(cluster~.,  data = train.sample)
+str(model)
+```
+ Make predictions
+```{r}
+train.pred<- model %>% predict(train.sample)
+test.pred <- model %>% predict(test.sample)
+```
+How to evaluate the model? Let's see the accuracy| weigt accuracy and micro|macro F1 as we have multiclassification 
+
+For more detail https://www.cse.iitk.ac.in/users/purushot/papers/macrof1.pdf
+
+
+TRAIN SET
+```{r}
+accuracy_rate(factor(train.pred$class),factor(train.sample$cluster))
+F1_rate(factor(train.pred$class),factor(train.sample$cluster))
+```
+TEST SET
+```{r}
+accuracy_rate(factor(test.pred$class),factor(test.sample$cluster))
+F1_rate(factor(test.pred$class),factor(test.sample$cluster))
+```
+
+ ===> The model seems quite complex, the performance is low in the test data
+ Pour plus de détail sur les performance :
+```{r}
+confusionMatrix(factor(train.pred$class),factor(train.sample$cluster))
+confusionMatrix(factor(test.pred$class),factor(test.sample$cluster))
+```
+
+## Nice to Know !!
+
+1.  Wilks lambda: test manova , diffcult to compute the pvalue direcly: A solution is ROA's transformation
+   The Wilks lambda is the preferred indicator for the statistical evaluation of the model. Itindicates
+to what extent the class centers are distinct from each other in the space of
+representation. It varies between 0 and 1: towards 0, the model will be good.
+
+
+2. We can use **Wilks lambda**' to derive model selections because this statisitics show  what will happen if the removed the features X
+
+
+3.  R combines 2 approches of LDA: 
+
+The posterio is based on predictive approach
+
+But the function score is compute on the geometric approach (PCA)
+
+
+## Forwardselection
+
+Features selection
+```{r}
+model.forward <- greedy.wilks(cluster ~ .,data=train.sample, niveau = 0.1)
+print(model.forward)
+```
+Absences , G3 , G1 ,G2 and  age are the most importants to split classes;
+
+Let's fit the model
+```{r}
+model.best <- lda(model.forward$formula,  data = train.sample)
+```
+
+Make predictions
+```{r}
+train.pred2<- predict(model.best, train.sample)
+test.pred2<-  predict(model.best, test.sample)
+```
+
+
+How to evaluate the model?
+```{r}
+#TRAIN SET
+accuracy_rate(factor(train.pred2$class),factor(train.sample$cluster))
+F1_rate(factor(train.pred2$class),factor(train.sample$cluster))
+```
+```{r}
+#TEST SET
+accuracy_rate(factor(test.pred2$class),factor(test.sample$cluster))
+F1_rate(factor(test.pred2$class),factor(test.sample$cluster))
+```
+====> this model is parsimonious 
+===== >the metrics are  efficients in the two data sets compared to the first model
+
+
+# Interpretable LDA
+
+## From LDA with PCA functions to easy to use scores
+
+Now the going to Construct our  linear discriminant function
+Indeed, From the raw values of the features,  we construct a linear and easy to implement score function in order to decide on the assignment of classes.
+
+R give us  functions discriminant with PCA (these are not easy to use) .For a new comer student  who arrives, firsly it is necessary to have  his coordinates on PCA  axes before being able to use the scores. This is why, I am doing  myself in this step the linear functions which do not require the coordinates pca
+
+
+
+Let see the functions with PCA
+```{r}
+print(model.best$scaling)
+```
+R affiche bel et bien les coefficients des fonctions canoniques à partir  partir d' une projection dans l'espace factoriel,
+
+
+with R, we don't have the intercept, we need to compute it ourselves
+
+
+Overall means by features
+```{r}
+xb <- colMeans(data.frame(train.sample[,-which(names(train.sample) == "cluster")])[,c('absences','G3','G2','G1','age')])
+print(xb)
+```
+
+
+This is how to get intercept for lda functions
+```{r}
+const_ <- apply(model.best$scaling,2,function(v){-sum(v*xb)})
+print(const_)
+```
+
+
+Conditional means
+```{r}
+cond_Xb <- sapply(1:ncol(model.best$scaling),function(j)
+  {sapply(model.best$lev,
+        function(niveau){sum(model.best$scaling[,j]*model.best$means[niveau,]) + const_[j]})
+   }
+)
+colnames(cond_Xb) <- paste("LD",1:ncol(model.best$scaling),sep="")
+rownames(cond_Xb) <- model.best$lev
+print(cond_Xb)
+```
+
+
+From pca features functions to linear features functions
+```{r}
+coef_ <- sapply(model.best$lev,function(niveau)
+{rowSums(sapply(1:ncol(model.best$scaling),
+                function(j){model.best$scaling[,j]*cond_Xb[niveau,j]}))
+})
+print(coef_)
+```
+From pca intercepts to linear features intercepts
+```{r}
+intercept_ <- sapply(model.best$lev,function(niveau)
+     {sum(mapply(prod,const_,cond_Xb[niveau,]))-0.5*sum(cond_Xb[niveau,]^2)+log(model.best$prior[niveau])})
+names(intercept_) <- levels(factor(train.sample$cluster))
+print(intercept_)
+```
+
+Below are the functions
+
+**Cluster 1**: &nbsp; $$ F_1=-30,99 +3,76* absences -1,06*G3 + 0,27*G1-0,25*G2 -0,08* age$$
+
+
+**Cluster 2**: &nbsp;     $$ F_2=7,56 -0,57*absences + 0,04* G3 - 0,05*G2 -0,36*G1 -0,18* ag $$
+
+
+**Cluster 3**: &nbsp; $$ F_3=19,7 -0,4*absences - 2,37* G3 - 0,24*G2 -0,33*G1 +0,19* age$$
+
+
+
+**Cluster 4**: &nbsp;  $$ F_4=-26,47 -0,8*absences + 0,56* G3+ 0,7*G2 +0,59*G1 +0,11* age $$
+
+
+**Cluster 5**: &nbsp; $$ F_5=3,53 +1,01*absences - 0,47* G3 - 0,14*G2 -0,79*G1 +0,22* age $$
+
+
+
+**Cluster 6**: &nbsp;  $$ F_6=-17,13 +0,8*absences + 0,24* G3 + 0,52*G2 +0,2*G1 -0,07* age $$
+
+.
+Pour chaque indivi donnée, il suffit de calculer directemnt la fonction score et prendre le maximum des 6 scores .
+On peut également se transformer chaque fonction en probabilité: 
+
+         $$F_1=\frac{F_1}{\sum_{i=1}^6 F_i}$$
+
+
+
+## Compute  Wilks Lambda from scratch and derive its Pvalue
+```{r}
+
+Xtrain=data.frame(train.sample[,-which(names(train.sample) == "cluster")])
+#number of
+p <- ncol(Xtrain)
+#dataset length
+n <- nrow(Xtrain)
+#number of cluster
+K <- nlevels(factor(train.sample$cluster))
+#Degrees of freedom ;numerator
+ddlSuppNum <- K - 1
+#Degrees of freedom : denominator
+ddlSuppDenom <- n - K - p + 1
+
+#matrice de convariance totale
+TOT <- cov(Xtrain)
+
+#WITHIN - covariance intra-classe
+
+WIT <- (1.0/(n-K)) *Reduce("+",
+                         lapply(levels(factor(train.sample$cluster)),function(niveau)
+                                        {(sum(factor(train.sample$cluster)==niveau)-1)*cov(Xtrain[factor(train.sample$cluster)==niveau,])}))
+
+#lambda de Wilks
+#matrices interm?diaires
+WITprim <- (n-K)/n*WIT
+TOTprim <- (n-1)/n*TOT
+#rapport des d?terminants -- Lambda de Wilks
+LW <- det(WITprim)/det(TOTprim)
+print(LW)
+## lower value ==> good
+
+
+#compute pvale
+stat=-log(LW) * (n -0.5 *( p-K+1))
+pvalue=pchisq(stat, df=p, lower.tail=FALSE)
+print (pvalue)
+```
+
+
+
+## Features importances by Wilk Lambda
+```{r}
+#vecteur des F
+FTest <- numeric(p)
+#p-value
+pvalueFTest <- numeric(p)
+#boucle
+for (j in 1:p){
+  #Lambda corresp.
+  LWvar <- det(WITprim[-j,-j])/det(TOTprim[-j,-j])
+  #print(LWvar)
+  #F
+  FTest[j] <- ddlSuppDenom / ddlSuppNum * (LWvar/LW - 1)
+  #p-value
+  pvalueFTest[j] <- pf(FTest[j],ddlSuppNum,ddlSuppDenom,lower.tail=FALSE)
+}
+
+
+temp <- data.frame(var=colnames(Xtrain),FValue=FTest,pvalue=round(pvalueFTest,6))
+print(temp)
+#affichage
+temp <- data.frame(var=colnames(Xtrain),FValue=FTest,pvalue=round(pvalueFTest,6)) %>% 
+  arrange(FValue)
+print(temp)
+```
