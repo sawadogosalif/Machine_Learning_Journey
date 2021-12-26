@@ -210,7 +210,7 @@ F1_rate(pred.ctree_test,   test.sample$cluster)
 Ce modèle est bon performant par rapport au CART!!!
 
 ``` r
- plot_ctree(model.ctree)
+ # plot_ctree(model.ctree)
 ```
 
 ![](03_trees_files/plot.png)<!-- -->
