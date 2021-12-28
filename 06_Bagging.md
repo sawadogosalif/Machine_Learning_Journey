@@ -115,5 +115,7 @@ plot(B,m.errors,xlab='B',ylab='Taux d’erreur',type='b')
 ```
 
 ![](06_Bagging_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
 Visiblement, pour B=0 nous avons le taux d’erreur la plus basse. Donc,
+
 il n y a aucun intéret à appliquer un modèl bagging cart!!!
