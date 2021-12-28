@@ -19,83 +19,18 @@ the more we will be able to find good ranking. We’ll use cart bagged
 source("C:/Users/u32118508/OneDrive - UPEC/Bureau/Machine_learning_journey/Machine_learning_journey/00_functions_multiclass.R")
 ```
 
-    ## Le chargement a nécessité le package : ggplot2
 
-    ## Le chargement a nécessité le package : lattice
 
 # Libraries
 
 ``` r
-library(tidyverse) #for easy data manipulation and visualization
-```
-
-    ## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --
-
-    ## v tibble  3.1.6     v dplyr   1.0.7
-    ## v tidyr   1.1.4     v stringr 1.4.0
-    ## v readr   2.1.0     v forcats 0.5.1
-    ## v purrr   0.3.4
-
-    ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-    ## x purrr::lift()   masks caret::lift()
-
-``` r
+library(tidyverse) #for easy data manipulation and visua
 library(caret)  #for easy machine learning workflow
-library(MASS)   #for Modern Applied Statistic
-```
-
-    ## 
-    ## Attachement du package : 'MASS'
-
-    ## L'objet suivant est masqué depuis 'package:dplyr':
-    ## 
-    ##     select
-
-``` r
 library(readxl) # Load the data
-library(klaR)   # lda features selection
 library(caret)
 library(rpart)
-library(randomForest)
-```
-
-    ## randomForest 4.6-14
-
-    ## Type rfNews() to see new features/changes/bug fixes.
-
-    ## 
-    ## Attachement du package : 'randomForest'
-
-    ## L'objet suivant est masqué depuis 'package:dplyr':
-    ## 
-    ##     combine
-
-    ## L'objet suivant est masqué depuis 'package:ggplot2':
-    ## 
-    ##     margin
-
-``` r
 library(adabag)
 ```
-
-    ## Le chargement a nécessité le package : foreach
-
-    ## 
-    ## Attachement du package : 'foreach'
-
-    ## Les objets suivants sont masqués depuis 'package:purrr':
-    ## 
-    ##     accumulate, when
-
-    ## Le chargement a nécessité le package : doParallel
-
-    ## Le chargement a nécessité le package : iterators
-
-    ## Le chargement a nécessité le package : parallel
-
-# Data
 
 ``` r
 data=read_excel("C:/Users/u32118508/OneDrive - UPEC/Bureau/Machine_learning_journey/Machine_learning_journey/OUTPUT/output_tp1.xlsx")
