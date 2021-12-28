@@ -35,12 +35,13 @@ playing on the variable selection mechanism.
 
 We have to parameters to tune :
 
-mtry: Number of variables randomly sampled as candidates at each split.
-ntree: Number of trees to grow.The default value is p/3 for regression
+**mtry**: Number of variables randomly sampled as candidates at each split.
+
+**ntree**: Number of trees to grow.The default value is p/3 for regression
 and sqrt(p) for classification.We should avoid using smaller values of
 mtry to avoid overfitting.
 
-nodesize – It refers to how many observations we want in the terminal
+**nodesize** – It refers to how many observations we want in the terminal
 nodes. If we use cart, we don’t need to tune it!:::::
 
 # Data
@@ -80,9 +81,7 @@ To tune both parameters in the same time we need to modify the code
 source of caret !!
 
 ``` r
-customRF <- list(type = "Classification",
-                 library = "randomForest",
-                 loop = NULL)
+customRF <- list(type = "Classification", library = "randomForest",loop = NULL)
 
 customRF$parameters <- data.frame(parameter = c("mtry", "ntree"),
                                   class = rep("numeric", 2),
@@ -91,10 +90,7 @@ customRF$parameters <- data.frame(parameter = c("mtry", "ntree"),
 customRF$grid <- function(x, y, len = NULL, search = "grid") {}
 
 customRF$fit <- function(x, y, wts, param, lev, last, weights, classProbs) {
-  randomForest(x, y,
-               mtry = param$mtry,
-               ntree=param$ntree)
-}
+  randomForest(x, y, mtry = param$mtry, ntree=param$ntree)}
 
 #Predict label
 customRF$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
