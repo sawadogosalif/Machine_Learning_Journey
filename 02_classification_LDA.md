@@ -467,9 +467,7 @@ Below are the functions
 
 . Pour chaque indivi donnée, il suffit de calculer directemnt la
 fonction score et prendre le maximum des 6 scores . On peut également se
-transformer chaque fonction en probabilité:
-
-         $$F_1=\frac{F_1}{\sum_{i=1}^6 F_i}$$
+transformer chaque fonction en probabilité:   score1=F1 / (F1+F2+F3+F4+f5+F6)
 
 ## Compute Wilks Lambda from scratch and derive its Pvalue
 
