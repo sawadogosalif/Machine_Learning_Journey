@@ -35,33 +35,8 @@ source("C:/Users/u32118508/OneDrive - UPEC/Bureau/Machine_learning_journey/A_jou
 
 ``` r
 library(tidyverse) #for easy data manipulation and visualization
-```
-
-    ## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --
-
-    ## v tibble  3.1.6     v dplyr   1.0.7
-    ## v tidyr   1.1.4     v stringr 1.4.0
-    ## v readr   2.1.0     v forcats 0.5.1
-    ## v purrr   0.3.4
-
-    ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-    ## x purrr::lift()   masks caret::lift()
-
-``` r
 library(caret)  #for easy machine learning workflow
 library(MASS)   #for Modern Applied Statistic
-```
-
-    ## 
-    ## Attachement du package : 'MASS'
-
-    ## L'objet suivant est masqué depuis 'package:dplyr':
-    ## 
-    ##     select
-
-``` r
 library(readxl) # Load the data
 library(klaR)   # lda features selection
 ```
