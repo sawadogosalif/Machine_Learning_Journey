@@ -17,4 +17,4 @@ Pour les notebooks à consulter, cliquer sur les fichier de types **.md**
 
 
 
-**Données et descriptions** :https://archive.ics.uci.edu/ml/datasets/student%2Bperformance
+**Données et descriptions :** :https://archive.ics.uci.edu/ml/datasets/student%2Bperformance
