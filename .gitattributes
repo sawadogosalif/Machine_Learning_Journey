@@ -1,2 +1,3 @@
 *.md linguist-detectable=true
 *.md linguist-language=R Markdown
+*.py linguist-language=Python
